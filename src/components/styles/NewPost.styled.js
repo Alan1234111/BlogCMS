@@ -20,7 +20,7 @@ export const StyledNewPost = styled.div`
   }
 
   form div label {
-    padding: 1em;
+    padding: 1em 0.3em 1em 0.1em;
   }
 
   button {

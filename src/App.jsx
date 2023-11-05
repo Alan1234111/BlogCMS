@@ -2,14 +2,14 @@ import {RouterProvider, createBrowserRouter, createRoutesFromElements, Route} fr
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import NewPost from "./pages/NewPost";
+import NewPost, {action as newPostAction} from "./pages/NewPost";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
       <Route index element={<Home />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/newpost" element={<NewPost />} />
+      <Route path="/newpost" element={<NewPost />} action={newPostAction} />
     </Route>
   )
 );
