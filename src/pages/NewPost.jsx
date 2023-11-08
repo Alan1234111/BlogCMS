@@ -1,10 +1,12 @@
-import { Form } from "react-router-dom";
-import { StyledPostForm } from "../components/styles/PostForm.styled";
 import { useEffect, useState } from "react";
+import { Form, useNavigate } from "react-router-dom";
+import { StyledPostForm } from "../components/styles/PostForm.styled";
 
 export default function NewPost() {
   const [tags, setTags] = useState(null);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const token = localStorage.getItem("jwt");
 
   useEffect(() => {
     async function fetchTags() {
@@ -19,20 +21,30 @@ export default function NewPost() {
       }
     }
 
-    fetchTags();
-  }, []);
+    if (!token) {
+      navigate("/login");
+    } else {
+      fetchTags();
+    }
+  }, [navigate, token]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!token) {
+      setMessage("You need to be logged in");
+      return;
+    }
 
     const formData = new FormData(event.target);
 
     try {
       await fetch("http://localhost:3000/api/posts", {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-      console.log("Post created successfully");
+
       setMessage("Post created successfully");
     } catch (err) {
       console.error("Error creating the post", err);
@@ -43,7 +55,7 @@ export default function NewPost() {
   return (
     <StyledPostForm>
       <h2>New Post</h2>
-      <span>{message && message}</span>
+      {message && <span>{message}</span>}
       <Form
         method="POST"
         encType="multipart/form-data"
