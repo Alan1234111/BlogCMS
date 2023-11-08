@@ -1,44 +1,40 @@
 import { useState, useEffect } from "react";
 import { StyledNewHome } from "../components/styles/Home.styled";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData, useNavigate } from "react-router-dom";
+
+export async function loader() {
+  const response = await fetch("http://localhost:3000/api/posts");
+  const postData = await response.json();
+
+  return postData.posts;
+}
 
 export default function Home() {
-  const [posts, setPosts] = useState(null);
+  const posts = useLoaderData();
+  console.log(posts);
+  const navigate = useNavigate();
+  const token = localStorage.getItem("jwt");
 
   useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const response = await fetch(
-          "http://localhost:3000/api/posts"
-        );
-        const result = await response.json();
-        setPosts(result.posts);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
+    // Check for the presence of a token and navigate if it doesn't exist.
+    if (!token) {
+      navigate("/login");
+      return;
     }
-
-    fetchPosts();
-  }, []);
-
-  console.log(posts);
+  }, [navigate, token]);
 
   return (
     <StyledNewHome>
-      {posts ? (
-        posts.map((post) => (
-          <div>
-            <img
-              src={`http://localhost:3000/${post.photoUrl}`}
-              alt=""
-            />
-            <h2>{post.title}</h2>
-            <Link to={`posts/${post._id}`}>Edit Post </Link>
-          </div>
-        ))
-      ) : (
-        <p>Loading...</p>
-      )}
+      {posts.map((post) => (
+        <div key={post._id}>
+          <img
+            src={`http://localhost:3000/${post.photoUrl}`}
+            alt=""
+          />
+          <h2>{post.title}</h2>
+          <Link to={`posts/${post._id}`}>Edit Post</Link>
+        </div>
+      ))}
     </StyledNewHome>
   );
 }
