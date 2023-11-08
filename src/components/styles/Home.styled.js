@@ -1,31 +1,35 @@
 import styled from "styled-components";
 
-export const StyledNewPost = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+export const StyledNewHome = styled.main`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-auto-rows: 1fr;
+  grid-gap: 10px;
 
-  form {
+  div {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    height: 300px;
+    padding: 2em;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   }
 
-  form input {
-    margin: 0.5rem 0;
-    padding: 0.2em 0.1em;
+  div img {
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
   }
 
-  textarea {
-    padding: 1em;
+  div h2 {
+    font-size: 1rem;
+    margin-top: 1em;
   }
 
-  form div label {
-    padding: 1em 0.3em 1em 0.1em;
-  }
-
-  button {
+  div a {
     appearance: none;
     background-color: #2ea44f;
+    margin-top: 1em;
     border: 1px solid rgba(27, 31, 35, 0.15);
     border-radius: 6px;
     box-shadow: rgba(27, 31, 35, 0.1) 0 1px 0;
@@ -33,7 +37,8 @@ export const StyledNewPost = styled.div`
     color: #fff;
     cursor: pointer;
     display: inline-block;
-    font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family: -apple-system, system-ui, "Segoe UI", Helvetica,
+      Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     font-size: 14px;
     font-weight: 600;
     line-height: 20px;

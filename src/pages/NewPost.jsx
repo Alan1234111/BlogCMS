@@ -1,9 +1,10 @@
 import { Form } from "react-router-dom";
-import { StyledNewPost } from "../components/styles/NewPost.styled";
+import { StyledPostForm } from "../components/styles/PostForm.styled";
 import { useEffect, useState } from "react";
 
 export default function NewPost() {
   const [tags, setTags] = useState(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function fetchTags() {
@@ -32,14 +33,17 @@ export default function NewPost() {
         body: formData,
       });
       console.log("Post created successfully");
+      setMessage("Post created successfully");
     } catch (err) {
       console.error("Error creating the post", err);
+      setMessage("Error creating the post");
     }
   };
 
   return (
-    <StyledNewPost>
+    <StyledPostForm>
       <h2>New Post</h2>
+      <span>{message && message}</span>
       <Form
         method="POST"
         encType="multipart/form-data"
@@ -75,6 +79,6 @@ export default function NewPost() {
 
         <button type="submit">Submit</button>
       </Form>
-    </StyledNewPost>
+    </StyledPostForm>
   );
 }
