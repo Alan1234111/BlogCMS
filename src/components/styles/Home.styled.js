@@ -6,7 +6,7 @@ export const StyledNewHome = styled.main`
   grid-auto-rows: 1fr;
   grid-gap: 10px;
 
-  div {
+  .post {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,21 +15,22 @@ export const StyledNewHome = styled.main`
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   }
 
-  div img {
+  .post img {
     width: 100%;
     height: 70%;
     object-fit: cover;
   }
 
-  div h2 {
+  .post h2 {
     font-size: 1rem;
     margin-top: 1em;
   }
 
-  div a {
+  .post a,
+  .post .delete-btn {
     appearance: none;
-    background-color: #2ea44f;
     margin-top: 1em;
+    margin-right: 1em;
     border: 1px solid rgba(27, 31, 35, 0.15);
     border-radius: 6px;
     box-shadow: rgba(27, 31, 35, 0.1) 0 1px 0;
@@ -37,8 +38,7 @@ export const StyledNewHome = styled.main`
     color: #fff;
     cursor: pointer;
     display: inline-block;
-    font-family: -apple-system, system-ui, "Segoe UI", Helvetica,
-      Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     font-size: 14px;
     font-weight: 600;
     line-height: 20px;
@@ -52,5 +52,13 @@ export const StyledNewHome = styled.main`
     vertical-align: middle;
     white-space: nowrap;
     border: none;
+  }
+
+  .post a {
+    background-color: #2ea44f;
+  }
+
+  .post .delete-btn {
+    background-color: #ef4444;
   }
 `;

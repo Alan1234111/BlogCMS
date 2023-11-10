@@ -1,18 +1,17 @@
-import { useState, useEffect } from "react";
-import { useLoaderData, Form, useNavigate } from "react-router-dom";
-import { StyledPostForm } from "../components/styles/PostForm.styled";
+import {useState, useEffect} from "react";
+import {useLoaderData, Form, useNavigate} from "react-router-dom";
+import {StyledPostForm} from "../components/styles/PostForm.styled";
+import {useAuth} from "../components/AuthContext";
 
-export async function loader({ params }) {
-  const postData = await fetch(
-    `http://localhost:3000/api/posts/${params.id}`
-  );
+export async function loader({params}) {
+  const postData = await fetch(`http://localhost:3000/api/posts/${params.id}`);
   return postData;
 }
 
 export default function EditPost() {
   const data = useLoaderData();
   const navigate = useNavigate();
-  const token = localStorage.getItem("jwt");
+  const {authenticated} = useAuth();
 
   const [tags, setTags] = useState(null);
   const [message, setMessage] = useState("");
@@ -26,9 +25,7 @@ export default function EditPost() {
   useEffect(() => {
     async function fetchTags() {
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/tags"
-        );
+        const response = await fetch("http://localhost:3000/api/tags");
         const result = await response.json();
         setTags(result);
       } catch (err) {
@@ -36,15 +33,15 @@ export default function EditPost() {
       }
     }
 
-    if (!token) {
+    if (!authenticated) {
       navigate("/login");
     } else {
       fetchTags();
     }
-  }, [navigate, token]);
+  }, [authenticated]);
 
   const handleCheckboxChange = (event) => {
-    const { name, value, checked } = event.target;
+    const {name, value, checked} = event.target;
 
     setFormData((prevData) => {
       if (checked) {
@@ -62,7 +59,7 @@ export default function EditPost() {
   };
 
   const handleInputChange = (event) => {
-    const { name, value } = event.target;
+    const {name, value} = event.target;
 
     setFormData((prevData) => ({
       ...prevData,
@@ -72,8 +69,9 @@ export default function EditPost() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const token = localStorage.getItem("jwt");
 
-    if (!token) {
+    if (!authenticated) {
       setMessage("You need to be logged in");
       return;
     }
@@ -83,7 +81,7 @@ export default function EditPost() {
     try {
       await fetch("http://localhost:3000/api/posts", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
         body: formData,
       });
 
@@ -94,47 +92,23 @@ export default function EditPost() {
     }
   };
 
-  return (
+  return authenticated ? (
     <StyledPostForm>
       <h2>Edit Post</h2>
       {message && <span>{message}</span>}
-      <Form
-        method="POST"
-        encType="multipart/form-data"
-        onSubmit={handleSubmit}
-      >
+      <Form method="POST" encType="multipart/form-data" onSubmit={handleSubmit}>
         <label htmlFor="title">Title:</label>
-        <input
-          type="text"
-          name="title"
-          id="title"
-          value={formData.title}
-          onChange={handleInputChange}
-        />
+        <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} />
 
         <label htmlFor="text">Text:</label>
-        <textarea
-          name="text"
-          id="text"
-          cols="30"
-          rows="10"
-          value={formData.text}
-          onChange={handleInputChange}
-        ></textarea>
+        <textarea name="text" id="text" cols="30" rows="10" value={formData.text} onChange={handleInputChange}></textarea>
 
         <div>
           {tags ? (
             tags.tags.map((tag, i) => (
               <div key={i}>
                 <label htmlFor={i}>{tag.name}</label>
-                <input
-                  type="checkbox"
-                  name="tag"
-                  value={tag._id}
-                  id={i}
-                  checked={formData.tag.includes(tag._id)}
-                  onChange={handleCheckboxChange}
-                />
+                <input type="checkbox" name="tag" value={tag._id} id={i} checked={formData.tag.includes(tag._id)} onChange={handleCheckboxChange} />
               </div>
             ))
           ) : (
@@ -143,15 +117,12 @@ export default function EditPost() {
         </div>
 
         <label htmlFor="photo">Photo:</label>
-        <input
-          type="file"
-          id="photo"
-          name="photoUrl"
-          onChange={handleInputChange}
-        />
+        <input type="file" id="photo" name="photoUrl" onChange={handleInputChange} />
 
         <button type="submit">Submit</button>
       </Form>
     </StyledPostForm>
+  ) : (
+    <p>Log in first</p>
   );
 }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { StyledNewHome } from "../components/styles/Home.styled";
-import { Link, useLoaderData, useNavigate } from "react-router-dom";
+import {useState, useEffect} from "react";
+import {StyledNewHome} from "../components/styles/Home.styled";
+import {Link, useLoaderData, useNavigate} from "react-router-dom";
+import {useAuth} from "../components/AuthContext";
 
 export async function loader() {
   const response = await fetch("http://localhost:3000/api/posts");
@@ -11,30 +12,47 @@ export async function loader() {
 
 export default function Home() {
   const posts = useLoaderData();
-  console.log(posts);
   const navigate = useNavigate();
-  const token = localStorage.getItem("jwt");
+  const {authenticated} = useAuth();
 
   useEffect(() => {
-    // Check for the presence of a token and navigate if it doesn't exist.
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-  }, [navigate, token]);
+    const token = localStorage.getItem("jwt");
 
-  return (
+    if (!token || !authenticated) {
+      navigate("/login");
+    }
+  }, [authenticated]);
+
+  const handleDelete = (id) => {
+    const token = localStorage.getItem("jwt");
+
+    fetch(`http://localhost:3000/api/posts/${id}`, {
+      method: "Delete",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    navigate("/");
+  };
+
+  return authenticated ? (
     <StyledNewHome>
       {posts.map((post) => (
-        <div key={post._id}>
-          <img
-            src={`http://localhost:3000/${post.photoUrl}`}
-            alt=""
-          />
+        <div key={post._id} className="post">
+          <img src={`http://localhost:3000/${post.photoUrl}`} alt="" />
           <h2>{post.title}</h2>
-          <Link to={`posts/${post._id}`}>Edit Post</Link>
+          <div className="action-btns">
+            <Link to={`posts/${post._id}`}>Edit Post</Link>
+            <button className="delete-btn" onClick={() => handleDelete(post._id)}>
+              Delete
+            </button>
+          </div>
         </div>
       ))}
     </StyledNewHome>
+  ) : (
+    <p>You need to be logged in</p>
   );
 }
