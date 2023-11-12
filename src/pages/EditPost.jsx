@@ -1,128 +1,83 @@
 import {useState, useEffect} from "react";
-import {useLoaderData, Form, useNavigate} from "react-router-dom";
-import {StyledPostForm} from "../components/styles/PostForm.styled";
+import {useLoaderData, useNavigate, useParams} from "react-router-dom";
 import {useAuth} from "../components/AuthContext";
+import FormComponent from "../components/FormComponent";
 
 export async function loader({params}) {
-  const postData = await fetch(`http://localhost:3000/api/posts/${params.id}`);
-  return postData;
+  const post = await fetch(`http://localhost:3000/api/posts/${params.id}`);
+  const tags = await fetch("http://localhost:3000/api/tags");
+
+  const resPost = await post.json();
+  const resTags = await tags.json();
+
+  return {post: resPost.post, tags: resTags.tags};
 }
 
 export default function EditPost() {
-  const data = useLoaderData();
-  const navigate = useNavigate();
+  let {id} = useParams();
+  const {post, tags} = useLoaderData();
   const {authenticated} = useAuth();
+  const navigate = useNavigate();
 
-  const [tags, setTags] = useState(null);
-  const [message, setMessage] = useState("");
-  const [formData, setFormData] = useState({
-    title: data.post.title || "",
-    text: data.post.text || "",
-    tag: data.post.tag || [],
-    photoUrl: data.post.photoUrl || "",
-  });
+  const [title, setTitle] = useState(post.title || "");
+  const [displayTag, setDisplayTag] = useState(post.tag.name || "");
+  const [content, setContent] = useState(post.text || "");
+  const [isPublished, setIsPublished] = useState(post.isPublished || false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [filePreview, setFilePreview] = useState(`http://localhost:3000/${post.photoUrl}` || "https://images.unsplash.com/photo-1682686580224-cd46ea1a6950?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
 
   useEffect(() => {
-    async function fetchTags() {
-      try {
-        const response = await fetch("http://localhost:3000/api/tags");
-        const result = await response.json();
-        setTags(result);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
-    }
+    const token = localStorage.getItem("jwt");
 
-    if (!authenticated) {
+    if (!token || !authenticated) {
       navigate("/login");
-    } else {
-      fetchTags();
     }
   }, [authenticated]);
 
-  const handleCheckboxChange = (event) => {
-    const {name, value, checked} = event.target;
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
 
-    setFormData((prevData) => {
-      if (checked) {
-        return {
-          ...prevData,
-          [name]: [...prevData[name], value],
-        };
-      } else {
-        return {
-          ...prevData,
-          [name]: prevData[name].filter((tagId) => tagId !== value),
-        };
-      }
-    });
-  };
+    if (selectedFile) {
+      // Read the selected file and create a data URL
+      const reader = new FileReader();
 
-  const handleInputChange = (event) => {
-    const {name, value} = event.target;
+      reader.onloadend = () => {
+        setFilePreview(reader.result);
+      };
 
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+      reader.readAsDataURL(selectedFile);
+    } else {
+      setFilePreview(null);
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem("jwt");
 
-    if (!authenticated) {
-      setMessage("You need to be logged in");
+    if (!token || !authenticated) {
+      setShowPopup(false);
       return;
     }
 
     const formData = new FormData(event.target);
+    formData.append("text", content);
 
     try {
-      await fetch("http://localhost:3000/api/posts", {
+      const res = await fetch(`http://localhost:3000/api/posts/${id}`, {
         method: "POST",
         headers: {Authorization: `Bearer ${token}`},
         body: formData,
       });
 
-      setMessage("Post edited successfully");
+      if (res.ok) {
+        setShowPopup(true);
+      }
     } catch (err) {
       console.error("Error editing the post", err);
-      setMessage("Error editing the post");
+      setShowPopup(false);
     }
   };
 
-  return authenticated ? (
-    <StyledPostForm>
-      <h2>Edit Post</h2>
-      {message && <span>{message}</span>}
-      <Form method="POST" encType="multipart/form-data" onSubmit={handleSubmit}>
-        <label htmlFor="title">Title:</label>
-        <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} />
-
-        <label htmlFor="text">Text:</label>
-        <textarea name="text" id="text" cols="30" rows="10" value={formData.text} onChange={handleInputChange}></textarea>
-
-        <div>
-          {tags ? (
-            tags.tags.map((tag, i) => (
-              <div key={i}>
-                <label htmlFor={i}>{tag.name}</label>
-                <input type="checkbox" name="tag" value={tag._id} id={i} checked={formData.tag.includes(tag._id)} onChange={handleCheckboxChange} />
-              </div>
-            ))
-          ) : (
-            <p>Loading...</p>
-          )}
-        </div>
-
-        <label htmlFor="photo">Photo:</label>
-        <input type="file" id="photo" name="photoUrl" onChange={handleInputChange} />
-
-        <button type="submit">Submit</button>
-      </Form>
-    </StyledPostForm>
-  ) : (
-    <p>Log in first</p>
-  );
+  return authenticated ? <FormComponent title={title} setTitle={setTitle} content={content} setContent={setContent} displayTag={displayTag} setDisplayTag={setDisplayTag} filePreview={filePreview} handleFileChange={handleFileChange} tags={tags} isPublished={isPublished} setIsPublished={setIsPublished} handleSubmit={handleSubmit} showPopup={showPopup} isNewPost={false} /> : <p>You Need to Be logged In</p>;
 }

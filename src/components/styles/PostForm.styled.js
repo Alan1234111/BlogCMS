@@ -3,9 +3,11 @@ import styled from "styled-components";
 export const StyledPostForm = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: 0 0 1em;
 
   form {
+    text-align: left;
+    width: 95%;
     display: flex;
     flex-direction: column;
   }
@@ -13,10 +15,6 @@ export const StyledPostForm = styled.div`
   form input {
     margin: 0.5rem 0;
     padding: 0.2em 0.1em;
-  }
-
-  textarea {
-    padding: 1em;
   }
 
   form div label {
@@ -33,8 +31,7 @@ export const StyledPostForm = styled.div`
     color: #fff;
     cursor: pointer;
     display: inline-block;
-    font-family: -apple-system, system-ui, "Segoe UI", Helvetica,
-      Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     font-size: 14px;
     font-weight: 600;
     line-height: 20px;
@@ -48,5 +45,21 @@ export const StyledPostForm = styled.div`
     vertical-align: middle;
     white-space: nowrap;
     border: none;
+  }
+
+  .tags-container label {
+    padding: 0.4em 0;
+  }
+
+  .tags-container {
+    padding: 0.3em 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .tags-container select {
+    padding: 0.5em 0.3em;
+    font-size: 1rem;
   }
 `;

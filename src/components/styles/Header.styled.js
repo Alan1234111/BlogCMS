@@ -6,6 +6,8 @@ export const StyledHeader = styled.header`
   justify-content: space-between;
   height: 60px;
   font-family: sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
 
   div {
     display: flex;

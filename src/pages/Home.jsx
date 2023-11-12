@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import {useEffect} from "react";
 import {StyledNewHome} from "../components/styles/Home.styled";
 import {Link, useLoaderData, useNavigate} from "react-router-dom";
 import {useAuth} from "../components/AuthContext";
@@ -23,10 +23,10 @@ export default function Home() {
     }
   }, [authenticated]);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const token = localStorage.getItem("jwt");
 
-    fetch(`http://localhost:3000/api/posts/${id}`, {
+    const res = await fetch(`http://localhost:3000/api/posts/${id}`, {
       method: "Delete",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -34,7 +34,9 @@ export default function Home() {
       },
     });
 
-    navigate("/");
+    if (res.ok) {
+      navigate("/");
+    }
   };
 
   return authenticated ? (

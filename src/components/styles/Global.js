@@ -8,7 +8,6 @@ const GlobalStyles = createGlobalStyle`
     }
 
     body {
-        max-width: 1200px;
         margin: 0 auto;
         font-family: sans-serif;
     }

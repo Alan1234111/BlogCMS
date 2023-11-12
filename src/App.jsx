@@ -4,7 +4,7 @@ import {AuthProvider} from "./components/AuthContext";
 import Layout from "./components/Layout";
 import Home, {loader as HomeLoader} from "./pages/Home";
 import Login from "./pages/Login";
-import NewPost from "./pages/NewPost";
+import NewPost, {loader as NewPostLoader} from "./pages/NewPost";
 import EditPost, {loader as EditPostLoader} from "./pages/EditPost";
 
 const router = createBrowserRouter(
@@ -12,7 +12,7 @@ const router = createBrowserRouter(
     <Route path="/" element={<Layout />}>
       <Route index element={<Home />} loader={HomeLoader} />
       <Route path="/login" element={<Login />} />
-      <Route path="/newpost" element={<NewPost />} />
+      <Route path="/newpost" element={<NewPost />} loader={NewPostLoader} />
       <Route path="/posts/:id" element={<EditPost />} loader={EditPostLoader} />
     </Route>
   )

@@ -1,14 +1,27 @@
+import FormComponent from "../components/FormComponent";
 import {useEffect, useState} from "react";
-import {Form, useNavigate} from "react-router-dom";
-import {StyledPostForm} from "../components/styles/PostForm.styled";
+import {useLoaderData, useNavigate} from "react-router-dom";
 import {useAuth} from "../components/AuthContext";
 
-export default function NewPost() {
-  const {authenticated} = useAuth();
-  const [tags, setTags] = useState(null);
-  const navigate = useNavigate();
+export async function loader() {
+  const tags = await fetch("http://localhost:3000/api/tags");
 
-  const [message, setMessage] = useState("");
+  const resTags = await tags.json();
+
+  return {tags: resTags.tags};
+}
+
+export default function NewPost() {
+  const {tags} = useLoaderData();
+  const navigate = useNavigate();
+  const {authenticated} = useAuth();
+
+  const [title, setTitle] = useState("Title");
+  const [displayTag, setDisplayTag] = useState("Travel");
+  const [content, setContent] = useState("Content");
+  const [isPublished, setIsPublished] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [filePreview, setFilePreview] = useState("https://images.unsplash.com/photo-1682686580224-cd46ea1a6950?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -16,72 +29,53 @@ export default function NewPost() {
     if (!token || !authenticated) {
       navigate("/login");
     }
-
-    async function fetchTags() {
-      try {
-        const response = await fetch("http://localhost:3000/api/tags");
-        const result = await response.json();
-        setTags(result);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      }
-    }
-
-    fetchTags();
   }, [authenticated]);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+
+    if (selectedFile) {
+      // Read the selected file and create a data URL
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        setFilePreview(reader.result);
+      };
+
+      reader.readAsDataURL(selectedFile);
+    } else {
+      setFilePreview(null);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem("jwt");
 
     if (!token || !authenticated) {
-      setMessage("You need to be logged in");
+      setShowPopup(false);
       return;
     }
 
     const formData = new FormData(event.target);
+    formData.append("text", content);
+    formData.append("isPublished", isPublished);
 
     try {
-      await fetch("http://localhost:3000/api/posts", {
+      const res = await fetch("http://localhost:3000/api/posts", {
         method: "POST",
         headers: {Authorization: `Bearer ${token}`},
         body: formData,
       });
 
-      setMessage("Post created successfully");
+      if (res.ok) {
+        setShowPopup(true);
+      }
     } catch (err) {
       console.error("Error creating the post", err);
-      setMessage("Error creating the post");
+      setShowPopup(false);
     }
   };
 
-  return authenticated ? (
-    <StyledPostForm>
-      <h2>New Post</h2>
-      {message && <span>{message}</span>}
-      <Form method="POST" encType="multipart/form-data" onSubmit={handleSubmit}>
-        <label htmlFor="title">Title:</label>
-        <input type="text" id="title" name="title" />
-        <label htmlFor="text">Text:</label>
-        <textarea name="text" id="text" cols="30" rows="10"></textarea>
-
-        <div>
-          {tags &&
-            tags.tags.map((tag, i) => (
-              <div key={i}>
-                <label htmlFor={i}>{tag.name}</label>
-                <input type="checkbox" name="tag" value={tag._id} id={i} />
-              </div>
-            ))}
-        </div>
-
-        <label htmlFor="photo">Photo:</label>
-        <input type="file" id="photo" name="photoUrl" />
-
-        <button type="submit">Submit</button>
-      </Form>
-    </StyledPostForm>
-  ) : (
-    <p>You Need to Be logged In</p>
-  );
+  return authenticated ? <FormComponent title={title} setTitle={setTitle} content={content} setContent={setContent} displayTag={displayTag} setDisplayTag={setDisplayTag} filePreview={filePreview} handleFileChange={handleFileChange} showPopup={showPopup} tags={tags} isPublished={isPublished} setIsPublished={setIsPublished} handleSubmit={handleSubmit} isNewPost={true} /> : <p>You Need to Be logged In</p>;
 }
